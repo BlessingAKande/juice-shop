@@ -1,28 +1,26 @@
-name: Semgrep Scan
-
 on:
+  workflow_dispatch: {}
+  pull_request: {}
   push:
     branches:
-      - master
-
-  pull_request:
-    branches:
-      - master
-
+    - main
+    - master
+    paths:
+    - .github/workflows/semgrep.yml
+  schedule:
+  # random HH:MM to avoid a load spike on GitHub Actions at 00:00
+  - cron: 43 3 * * *
+name: Semgrep
 jobs:
   semgrep:
-    name: Run Semgrep
+    name: semgrep/ci
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
-      security-events: write
-
+    env:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    container:
+      image: semgrep/semgrep
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run Semgrep
-        uses: semgrep/semgrep-action@v1
-        env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    - uses: actions/checkout@v6
+    - run: semgrep ci
